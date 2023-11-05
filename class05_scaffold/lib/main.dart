@@ -11,6 +11,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+      ),
       home: MyHomePage(),
     );
   }
@@ -37,11 +40,12 @@ class MyHomePage extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: <Widget>[
             UserAccountsDrawerHeader(
-              accountName: Text('John Doe'),
-              accountEmail: Text('johndoe@example.com'),
+              arrowColor: Colors.black,
+              currentAccountPictureSize: Size.square(80),
+              accountName: Text('Ahwu Tsai'),
+              accountEmail: Text('ahwuiot@gmail.com'),
               currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Text('JD'),
+                child: Image.asset("assets/Girl_200.png"),
               ),
             ),
             ListTile(
