@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_web/shared_preferences_web.dart';
 
-void main() {
+void main() async {
   runApp(const MainApp());
 }
 
@@ -33,6 +35,44 @@ class _Check_boxState extends State<Check_box> {
   List<bool> isChecked = List.generate(24, (index) => false);
   DateTime? selectedDate;
 
+  Future<void> _saveData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String date = selectedDate?.toLocal().toString() ?? '';
+
+    // 将isChecked转换为List<String>
+    final List<String> boolListAsString =
+        isChecked.map((value) => value ? '1' : '0').toList();
+
+    // 将数据保存到SharedPreferences
+    await prefs.setStringList(date, boolListAsString);
+  }
+
+  Future<void> _loadData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String date = selectedDate?.toLocal().toString() ?? '';
+    final List<String>? boolListAsString = prefs.getStringList(date);
+    print("獲取時間$date");
+    print("獲取過往資料$boolListAsString");
+    if (boolListAsString != null) {
+      // 将字符串列表转换为List<bool>
+      final List<bool> loadedData = boolListAsString.map((value) {
+        if (value == '1')
+          return true;
+        else
+          return false;
+      }).toList();
+
+      setState(() {
+        isChecked = loadedData;
+      });
+    } else {
+      // 如果在SharedPreferences中找不到数据，可以设置默认的isChecked列表
+      setState(() {
+        isChecked = List.generate(24, (index) => false);
+      });
+    }
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -44,6 +84,9 @@ class _Check_boxState extends State<Check_box> {
       setState(() {
         selectedDate = picked;
       });
+
+      // 在selectedDate有值后再调用_loadData
+      _loadData();
     }
   }
 
@@ -84,6 +127,7 @@ class _Check_boxState extends State<Check_box> {
                         onChanged: (bool? value) {
                           setState(() {
                             isChecked[index] = value!;
+                            _saveData();
                           });
                         },
                       ),
@@ -97,10 +141,12 @@ class _Check_boxState extends State<Check_box> {
         ElevatedButton(
             onPressed: () {
               setState(() {
+                _saveData();
                 isChecked = List.generate(24, (index) => false);
               });
             },
-            child: Text("Clean!"))
+            child: Text("Clean!")),
+        // Text(isChecked.toString())
       ],
     );
   }
