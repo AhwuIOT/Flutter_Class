@@ -30,6 +30,17 @@ class _loginPageState extends State<loginPage> {
                 labelText: '你是誰?',
                 hintText: '輸入你的號碼',
               ),
+              onSubmitted: (value) {
+                setState(() {
+                  if (loginID.contains(value)) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Check_box(),
+                        ));
+                  }
+                });
+              },
             ),
           ),
         ),
