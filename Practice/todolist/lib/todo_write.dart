@@ -5,11 +5,6 @@ import 'todo_all.dart';
 
 TextEditingController _controller = TextEditingController();
 TextEditingController _todocontroller = TextEditingController();
-String Todocontent = '';
-Map<String, List<String>> myMap = {
-  'key1': ['item1', 'item2', 'item3'],
-  'key2': ['item4', 'item5']
-};
 
 class todoList extends StatefulWidget {
   const todoList({super.key});
@@ -18,12 +13,32 @@ class todoList extends StatefulWidget {
 }
 
 class _todoListState extends State<todoList> {
+  String? Todocontent;
+  List<String> Uncomplete = [];
+  Map<String, bool> isChanged = {};
+  Future<void> saveData(String todotask) async {
+    print("todo$todotask");
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      Uncomplete = prefs.getStringList('Uncomplete') ?? [];
+      Uncomplete?.forEach((element) {
+        isChanged?[element] = prefs.getBool(element) ?? false;
+      });
+      Uncomplete?.add(todotask);
+      isChanged?[todotask] = false;
+    });
+
+    await prefs.setStringList('Uncomplete', Uncomplete!);
+    await prefs.setBool(todotask, false);
+    print("todowrite${Uncomplete} && ${isChanged}");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        title: Center(
+        title: const Center(
             child: Text(
           "TodoList",
           style: TextStyle(
@@ -34,13 +49,14 @@ class _todoListState extends State<todoList> {
           width: MediaQuery.of(context).size.width,
           child: Column(
             children: [
+              //日期的輸入盒
               TextField(
                 textDirection: TextDirection.ltr,
                 controller: _controller,
                 decoration: InputDecoration(
                   labelStyle:
                       TextStyle(color: Theme.of(context).colorScheme.secondary),
-                  label: Text(
+                  label: const Text(
                     "日期:",
                     style: TextStyle(fontSize: 20),
                   ),
@@ -48,11 +64,12 @@ class _todoListState extends State<todoList> {
                 style:
                     TextStyle(color: Theme.of(context).colorScheme.secondary),
               ),
+              //ToDo的輸入盒
               TextField(
                   controller: _todocontroller,
-                  onChanged: (value) {
+                  onTapOutside: (PointerDownEvent) {
                     setState(() {
-                      Todocontent = value;
+                      Todocontent = _todocontroller.text;
                     });
                   },
                   decoration: InputDecoration(
@@ -66,19 +83,20 @@ class _todoListState extends State<todoList> {
               SizedBox(
                 height: 20,
               ),
+              //OK的按鈕
               TextButton(
                   onPressed: () {
                     setState(() {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (contxt) => MyApp(
-                                    data: Todocontent,
-                                  )));
+                      saveData(Todocontent!);
+                      // print("SaveData完data${task['Uncomplete']}");
+                      // print("SaveData完${isChanged}");
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (contxt) => MyApp()));
                       _todocontroller.text = '';
+                      // print("在todowrite的check值${isChanged}");
                     });
                   },
-                  child: Text(
+                  child: const Text(
                     "OK",
                     style: TextStyle(fontSize: 20),
                   ))
@@ -97,11 +115,6 @@ class TodoDate extends StatefulWidget {
 
 class _TodoDateState extends State<TodoDate> {
   DateTime selectedDate = DateTime.now();
-  Future<void> _loadDate() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String date = selectedDate.toLocal().toString() ?? '';
-    print(date);
-  }
 
   Future<void> selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -110,12 +123,14 @@ class _TodoDateState extends State<TodoDate> {
       firstDate: DateTime(2021),
       lastDate: DateTime(2100),
     );
-    if (picked != null && picked != selectedDate) {
+    if ((picked != null) || (picked != selectedDate)) {
       setState(() {
-        selectedDate = picked;
-        _controller.text = "${picked.year}/${picked.month}/${picked.day}";
+        // picked = picked ?? DateTime.now();
+        selectedDate = picked ?? DateTime.now();
+        _controller.text =
+            "${selectedDate.year}/${selectedDate.month}/${selectedDate.day}";
       });
-      _loadDate();
+      // _loadDate();
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => todoList()));
     }
@@ -128,7 +143,7 @@ class _TodoDateState extends State<TodoDate> {
       onPressed: () {
         selectDate(context);
       },
-      child: Icon(
+      child: const Icon(
         Icons.add,
         size: 30,
         // color: Theme.of(context).colorScheme.secondary,
