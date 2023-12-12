@@ -51,9 +51,9 @@ class _FetchDataState extends State<FetchData> {
     setState(() {
       Uncomplete = prefs.getStringList('Uncomplete') ?? [];
       Complete = prefs.getStringList('Complete') ?? [];
-      Uncomplete.forEach((element) {
-        isChanged[element] = prefs.getBool(element) ?? false;
-      });
+      for (int i = 0; i < Uncomplete.length; i++) {
+        isChanged[Uncomplete[i]] = prefs.getBool(Uncomplete[i]) ?? false;
+      }
     });
   }
 
@@ -82,7 +82,7 @@ class _FetchDataState extends State<FetchData> {
                       MaterialPageRoute(builder: (contxt) => todoComplete()));
                 });
               },
-              icon: Icon(Icons.add_task))
+              icon: const Icon(Icons.add_task))
         ],
         leading: TextButton(
           child: const Text(

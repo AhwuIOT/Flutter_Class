@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todolist/main.dart';
-import 'todo_all.dart';
 
 TextEditingController _controller = TextEditingController();
 TextEditingController _todocontroller = TextEditingController();
@@ -21,16 +20,16 @@ class _todoListState extends State<todoList> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       Uncomplete = prefs.getStringList('Uncomplete') ?? [];
-      Uncomplete?.forEach((element) {
-        isChanged?[element] = prefs.getBool(element) ?? false;
-      });
-      Uncomplete?.add(todotask);
-      isChanged?[todotask] = false;
+      for (int i = 0; i < Uncomplete.length; i++) {
+        isChanged[Uncomplete[i]] = prefs.getBool(Uncomplete[i]) ?? false;
+      }
+      Uncomplete.add(todotask);
+      isChanged[todotask] = false;
     });
 
-    await prefs.setStringList('Uncomplete', Uncomplete!);
+    await prefs.setStringList('Uncomplete', Uncomplete);
     await prefs.setBool(todotask, false);
-    print("todowrite${Uncomplete} && ${isChanged}");
+    print("todowrite$Uncomplete && $isChanged");
   }
 
   @override
@@ -45,7 +44,7 @@ class _todoListState extends State<todoList> {
               color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
         )),
       ),
-      body: Container(
+      body: SizedBox(
           width: MediaQuery.of(context).size.width,
           child: Column(
             children: [
@@ -80,20 +79,19 @@ class _todoListState extends State<todoList> {
                           color: Theme.of(context).colorScheme.secondary),
                     ),
                   )),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
-              //OK的按鈕
+
               TextButton(
                   onPressed: () {
                     setState(() {
                       saveData(Todocontent!);
-                      // print("SaveData完data${task['Uncomplete']}");
-                      // print("SaveData完${isChanged}");
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (contxt) => MyApp()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (contxt) => const MyApp()));
                       _todocontroller.text = '';
-                      // print("在todowrite的check值${isChanged}");
                     });
                   },
                   child: const Text(
@@ -146,7 +144,6 @@ class _TodoDateState extends State<TodoDate> {
       child: const Icon(
         Icons.add,
         size: 30,
-        // color: Theme.of(context).colorScheme.secondary,
       ),
     );
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TodoAll extends StatefulWidget {
-  const TodoAll({Key? key});
+  const TodoAll({super.key});
 
   @override
   State<TodoAll> createState() => _TodoAllState();
@@ -38,9 +38,9 @@ class _TodoAllState extends State<TodoAll> {
     setState(() {
       Complete = prefs.getStringList('Complete') ?? [];
       Uncomplete = prefs.getStringList('Uncomplete') ?? [];
-      Uncomplete.forEach((element) {
-        isChanged[element] = prefs.getBool(element) ?? false;
-      });
+      for (int i = 0; i < Uncomplete.length; i++) {
+        isChanged[Uncomplete[i]] = prefs.getBool(Uncomplete[i]) ?? false;
+      }
     });
   }
 
