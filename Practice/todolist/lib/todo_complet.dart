@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'task.dart';
+import 'main.dart';
 
 class todoComplete extends StatefulWidget {
   const todoComplete({
@@ -11,19 +13,31 @@ class todoComplete extends StatefulWidget {
 }
 
 class _todoCompleteState extends State<todoComplete> {
-  Map<String, bool> isChanged = {};
-  List<String> Uncomplete = [];
-  List<String> Complete = [];
+  TaskStoreage task = TaskStoreage();
+
   Future<void> loadData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      Complete = prefs.getStringList('Complete') ?? [];
-      Uncomplete = prefs.getStringList('Uncomplete') ?? [];
-      Uncomplete.forEach((element) {
-        isChanged[element] = prefs.getBool(element) ?? false;
-      });
+      task.Complete = prefs.getStringList('Complete') ?? [];
+      task.Uncomplete = prefs.getStringList('Uncomplete') ?? [];
+      for (int i = 0; i < task.Uncomplete.length; i++) {
+        task.isChanged[task.Uncomplete[i]] =
+            prefs.getBool(task.Uncomplete[i]) ?? false;
+      }
     });
+  }
+
+  Future<void> unDo(String unDodata) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      if (!task.Uncomplete.contains(unDodata)) task.Uncomplete.add(unDodata);
+      if (task.Complete.contains(unDodata)) task.Complete.remove(unDodata);
+      task.isChanged[unDodata] = false;
+    });
+    await prefs.setStringList('Complete', task.Complete);
+    await prefs.setStringList('Uncomplete', task.Uncomplete);
+    await prefs.setBool(unDodata, false);
   }
 
   @override
@@ -39,18 +53,22 @@ class _todoCompleteState extends State<todoComplete> {
           leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: () {
-          Navigator.pop(context);
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => const MyApp()));
         },
       )),
       body: ListView.builder(
-          itemCount: Complete.length,
+          itemCount: task.Complete.length,
           itemBuilder: (context, index) {
             return ListTile(
               title: Text(
-                Complete[index],
+                task.Complete[index],
                 style:
                     TextStyle(color: Theme.of(context).colorScheme.secondary),
               ),
+              onTap: () {
+                unDo(task.Complete[index]);
+              },
             );
           }),
     );

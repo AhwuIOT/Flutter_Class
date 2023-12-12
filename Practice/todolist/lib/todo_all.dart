@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'task.dart';
 
 class TodoAll extends StatefulWidget {
   const TodoAll({super.key});
@@ -9,37 +10,37 @@ class TodoAll extends StatefulWidget {
 }
 
 class _TodoAllState extends State<TodoAll> {
-  Map<String, bool> isChanged = {};
-  List<String> Uncomplete = [];
-  List<String> Complete = [];
+  TaskStoreage task = TaskStoreage();
+
   Future<void> saveCheck(bool isCheck, String data) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      isChanged[data] = isCheck;
+      task.isChanged[data] = isCheck;
     });
 
-    Complete = prefs.getStringList('Complete') ?? [];
+    task.Complete = prefs.getStringList('Complete') ?? [];
 
-    if (isChanged[data]!) {
-      Complete.add(data);
-      Uncomplete.remove(data);
+    if (task.isChanged[data]!) {
+      task.Complete.add(data);
+      task.Uncomplete.remove(data);
     } else {
-      Complete.remove(data);
-      Uncomplete.add(data);
+      task.Complete.remove(data);
+      task.Uncomplete.add(data);
     }
     await prefs.setBool(data, isCheck);
-    await prefs.setStringList('Complete', Complete);
-    await prefs.setStringList('Uncomplete', Uncomplete);
+    await prefs.setStringList('Complete', task.Complete);
+    await prefs.setStringList('Uncomplete', task.Uncomplete);
   }
 
   Future<void> loadData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      Complete = prefs.getStringList('Complete') ?? [];
-      Uncomplete = prefs.getStringList('Uncomplete') ?? [];
-      for (int i = 0; i < Uncomplete.length; i++) {
-        isChanged[Uncomplete[i]] = prefs.getBool(Uncomplete[i]) ?? false;
+      task.Complete = prefs.getStringList('Complete') ?? [];
+      task.Uncomplete = prefs.getStringList('Uncomplete') ?? [];
+      for (int i = 0; i < task.Uncomplete.length; i++) {
+        task.isChanged[task.Uncomplete[i]] =
+            prefs.getBool(task.Uncomplete[i]) ?? false;
       }
     });
   }
@@ -54,10 +55,10 @@ class _TodoAllState extends State<TodoAll> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView.builder(
-        itemCount: Uncomplete.length,
+        itemCount: task.Uncomplete.length,
         itemBuilder: (context, index) {
-          final String todoItem = Uncomplete[index];
-          final bool isChecked = isChanged[todoItem] ?? false;
+          final String todoItem = task.Uncomplete[index];
+          final bool isChecked = task.isChanged[todoItem] ?? false;
 
           return ListTile(
             leading: Checkbox(
@@ -71,7 +72,7 @@ class _TodoAllState extends State<TodoAll> {
             title: Text(
               todoItem,
               style: TextStyle(
-                  decoration: (isChanged[todoItem] ?? false)
+                  decoration: (task.isChanged[todoItem] ?? false)
                       ? TextDecoration.lineThrough
                       : TextDecoration.none),
             ),

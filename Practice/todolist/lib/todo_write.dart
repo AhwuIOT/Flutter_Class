@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todolist/main.dart';
+import 'task.dart';
 
-TextEditingController _controller = TextEditingController();
-TextEditingController _todocontroller = TextEditingController();
+final TextEditingController _controller = TextEditingController();
 
 class todoList extends StatefulWidget {
   const todoList({super.key});
@@ -12,24 +12,24 @@ class todoList extends StatefulWidget {
 }
 
 class _todoListState extends State<todoList> {
+  final TextEditingController _todocontroller = TextEditingController();
+  TaskStoreage task = TaskStoreage();
   String? Todocontent;
-  List<String> Uncomplete = [];
-  Map<String, bool> isChanged = {};
+
   Future<void> saveData(String todotask) async {
-    print("todo$todotask");
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      Uncomplete = prefs.getStringList('Uncomplete') ?? [];
-      for (int i = 0; i < Uncomplete.length; i++) {
-        isChanged[Uncomplete[i]] = prefs.getBool(Uncomplete[i]) ?? false;
+      task.Uncomplete = prefs.getStringList('Uncomplete') ?? [];
+      for (int i = 0; i < task.Uncomplete.length; i++) {
+        task.isChanged[task.Uncomplete[i]] =
+            prefs.getBool(task.Uncomplete[i]) ?? false;
       }
-      Uncomplete.add(todotask);
-      isChanged[todotask] = false;
+      task.Uncomplete.add(todotask);
+      task.isChanged[todotask] = false;
     });
 
-    await prefs.setStringList('Uncomplete', Uncomplete);
+    await prefs.setStringList('Uncomplete', task.Uncomplete);
     await prefs.setBool(todotask, false);
-    print("todowrite$Uncomplete && $isChanged");
   }
 
   @override
@@ -66,7 +66,7 @@ class _todoListState extends State<todoList> {
               //ToDo的輸入盒
               TextField(
                   controller: _todocontroller,
-                  onTapOutside: (PointerDownEvent) {
+                  onTapOutside: (value) {
                     setState(() {
                       Todocontent = _todocontroller.text;
                     });

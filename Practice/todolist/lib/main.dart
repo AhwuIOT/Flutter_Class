@@ -3,17 +3,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'todo_write.dart';
 import 'todo_complet.dart';
+import 'task.dart';
 
 //設定主題顏色跟副顏色的地方
 ThemeData mainTheme = ThemeData(
     brightness: Brightness.dark,
-    colorScheme: ColorScheme.dark(
+    colorScheme: const ColorScheme.dark(
       primary: Colors.yellow,
       secondary: Colors.white,
     ));
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 //內容主要分成appbar，body,floatingactionbutton
@@ -33,7 +34,7 @@ class MyApp extends StatelessWidget {
 }
 
 class FetchData extends StatefulWidget {
-  FetchData({
+  const FetchData({
     super.key,
   });
 
@@ -42,17 +43,15 @@ class FetchData extends StatefulWidget {
 }
 
 class _FetchDataState extends State<FetchData> {
-  List<String> Uncomplete = [];
-  Map<String, bool> isChanged = {};
-  List<String> Complete = [];
-
+  TaskStoreage task = TaskStoreage();
   Future<void> loadData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      Uncomplete = prefs.getStringList('Uncomplete') ?? [];
-      Complete = prefs.getStringList('Complete') ?? [];
-      for (int i = 0; i < Uncomplete.length; i++) {
-        isChanged[Uncomplete[i]] = prefs.getBool(Uncomplete[i]) ?? false;
+      task.Uncomplete = prefs.getStringList('Uncomplete') ?? [];
+      task.Complete = prefs.getStringList('Complete') ?? [];
+      for (int i = 0; i < task.Uncomplete.length; i++) {
+        task.isChanged[task.Uncomplete[i]] =
+            prefs.getBool(task.Uncomplete[i]) ?? false;
       }
     });
   }
@@ -78,8 +77,10 @@ class _FetchDataState extends State<FetchData> {
           IconButton(
               onPressed: () {
                 setState(() {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (contxt) => todoComplete()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (contxt) => const todoComplete()));
                 });
               },
               icon: const Icon(Icons.add_task))
@@ -103,8 +104,8 @@ class _FetchDataState extends State<FetchData> {
               color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
         )),
       ),
-      body: TodoAll(),
-      floatingActionButton: TodoDate(),
+      body: const TodoAll(),
+      floatingActionButton: const TodoDate(),
     );
   }
 }
